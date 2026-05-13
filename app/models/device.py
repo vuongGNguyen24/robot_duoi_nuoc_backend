@@ -14,4 +14,4 @@ class Device(Base):
     firmware_version = Column(String, nullable=True)
     location = Column(String, nullable=True)
     installed_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now())
