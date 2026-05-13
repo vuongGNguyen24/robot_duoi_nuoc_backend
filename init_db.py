@@ -34,7 +34,15 @@ def init_db():
             role="admin",
             phone_number="0123456789"
         )
+        user = User(
+            id=uuid.uuid4(),
+            username="user",
+            password_hash=get_password_hash("user123"),
+            role="user",
+            phone_number="0123456780"
+        )
         db.add(admin)
+        db.add(user)
         db.commit()
         print("Admin user created: admin / admin123")
     else:
