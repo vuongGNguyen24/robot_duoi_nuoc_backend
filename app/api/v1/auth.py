@@ -16,8 +16,9 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(subject=user.id)
-    return {"access_token": access_token, "token_type": "bearer"}
+    access_token = create_access_token(subject=user.id, role=user.role)
+    return {"access_token": access_token, "token_type": "bearer", "role": user.role}
+
 
 @auth_router.put("/password", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(payload: ChangePasswordRequest, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
@@ -29,7 +30,7 @@ async def change_password(payload: ChangePasswordRequest, current_user=Depends(g
 @auth_router.post("/forgot-password", status_code=status.HTTP_202_ACCEPTED)
 async def forgot_password(payload: ForgotPasswordRequest):
     # Mock sending SMS
-    return {"message": "OTP sent"}
+    return {"message": "OTP sent", "otp_code": "123456"}
 
 @auth_router.post("/reset-password", status_code=status.HTTP_200_OK)
 async def reset_password(payload: ResetPasswordRequest):
