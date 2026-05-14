@@ -1,6 +1,6 @@
 from .user import (
-    UserBase, LoginRequest, ChangePasswordRequest, ForgotPasswordRequest, 
-    ResetPasswordRequest, UpdatePhoneRequest, UserResponse
+    UserBase, LoginRequest, ChangePasswordRequest, SendOtpRequest, 
+    UpdatePhoneRequest, UserResponse, VerifyOtpRequest
 )
 from .device import DeviceBase, DeviceResponse, ThresholdUpdateRequest
 from .telemetry import (

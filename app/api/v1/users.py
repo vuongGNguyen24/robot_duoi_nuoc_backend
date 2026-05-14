@@ -9,6 +9,10 @@ users_router = APIRouter(prefix="/users", tags=["Users"])
 async def get_current_user_profile(current_user=Depends(get_current_user)):
     return current_user
 
+# @users_router.get("/settings/thresholds", response_model=UserResponse)
+# async def get_user_setting(current_user=Depends(get_current_user)):
+#     return current_user
+
 @users_router.put("/me/phone", response_model=UserResponse)
 async def update_phone_number(payload: UpdatePhoneRequest, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     current_user.phone_number = payload.phone_number

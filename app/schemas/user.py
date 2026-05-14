@@ -18,13 +18,9 @@ class ChangePasswordRequest(BaseModel):
     old_password: str
     new_password: str
 
-class ForgotPasswordRequest(BaseModel):
+class SendOtpRequest(BaseModel):
     phone_number: str
 
-class ResetPasswordRequest(BaseModel):
-    phone_number: str
-    otp: str
-    new_password: str
 
 class UpdatePhoneRequest(BaseModel):
     phone_number: str
@@ -36,3 +32,7 @@ class UserResponse(UserBase):
     class Config:
         orm_mode = True
         from_attributes = True
+
+class VerifyOtpRequest(BaseModel):
+    phone_number: str
+    otp: str
