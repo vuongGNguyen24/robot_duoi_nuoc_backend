@@ -8,3 +8,5 @@ python-jose[cryptography]
 passlib[argon2]
 python-multipart
 geoalchemy2
+pandas
+openpyxl

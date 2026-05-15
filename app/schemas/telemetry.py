@@ -30,3 +30,10 @@ class CameraImageResponse(BaseModel):
     image_url: str = Field(..., description="URL truy cập ảnh")
     file_size_bytes: Optional[int] = None
     linked_telemetry_time: Optional[datetime] = Field(None, description="Thời điểm đo telemetry")
+
+class ExportRequest(BaseModel):
+    start_date: datetime
+    end_date: datetime
+    columns: List[str]
+    format: str = "csv"  # "csv" or "xlsx"
+

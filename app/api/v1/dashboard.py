@@ -1,24 +1,26 @@
-from fastapi import APIRouter, Depends
-from fastapi.responses import FileResponse
-from typing import List
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
+from typing import List, Optional
 from datetime import datetime
-from app.api.dependencies import get_current_user, get_db
 from sqlalchemy.orm import Session
-from app.schemas.telemetry import DashboardSummaryResponse, TelemetryRecordResponse
+
+from app.api.dependencies import get_current_user, get_db
+from app.schemas.telemetry import DashboardSummaryResponse, TelemetryRecordResponse, ExportRequest
 from app.models import Device, Sensor, Telemetry, DevicePosition, CameraImage
+from app.services.telemetry_service import telemetry_service
 
 dashboard_router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @dashboard_router.get("/summary", response_model=DashboardSummaryResponse)
 async def get_dashboard_summary(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
-    #user and device is 1 - 1 relationship, so we can directly query devices by user_id
+    # user and device is 1 - 1 relationship, so we can directly query devices by user_id
     devices = db.query(Device).filter(Device.user_id == current_user.id)
-    #get last telemetry for each device
+    # get last telemetry for each device
     latest_sensor_telemetry = []
     for device in devices:
-        #query all sensors for this device
+        # query all sensors for this device
         sensors = db.query(Sensor).filter(Sensor.device_id == device.id).all()
-        #query the latest telemetry for each sensor
+        # query the latest telemetry for each sensor
         for sensor in sensors:
             telemetry = db.query(Telemetry).filter(Telemetry.sensor_id == sensor.id).order_by(Telemetry.time.desc()).first()
             if telemetry:
@@ -105,12 +107,29 @@ async def get_dashboard_telemetry(
 
     return final_records
 
-@dashboard_router.get("/export", response_class=FileResponse)
+@dashboard_router.post("/export")
 async def export_report(
-    start_date: datetime, 
-    end_date: datetime, 
-    format: str = "csv", 
+    payload: ExportRequest,
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    pass
+    """
+    Xuất báo cáo định dạng CSV hoặc XLSX dựa trên payload.
+    Lưu ý: API này nhận thông tin xuất qua body (POST) để hỗ trợ danh sách cột linh hoạt.
+    """
+    output, filename, media_type = await telemetry_service.export_telemetry_data(
+        db=db,
+        user_id=current_user.id,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        columns=payload.columns,
+        format=payload.format
+    )
+    
+    if not output:
+        return {"message": "No data found to export"}
+
+    headers = {
+        'Content-Disposition': f'attachment; filename="{filename}"'
+    }
+    return StreamingResponse(output, media_type=media_type, headers=headers)

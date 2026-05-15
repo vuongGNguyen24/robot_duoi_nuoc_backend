@@ -247,19 +247,30 @@ async def get_dashboard_telemetry(
     """
     pass
 
-@dashboard_router.get("/export", response_class=FileResponse)
+class ExportRequest(BaseModel):
+    start_date: datetime
+    end_date: datetime
+    columns: List[str]
+    format: str = "csv" # "csv" or "xlsx"
+
+# --- Response Models ---
+# ... (rest of models)
+
+# ... (in section 2.3)
+
+@dashboard_router.post("/export")
 async def export_report(
-    start_date: datetime, 
-    end_date: datetime, 
-    format: str = "csv", 
-    current_user=Depends(get_current_user)
+    payload: ExportRequest,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Xuất file báo cáo dữ liệu quan trắc.
-    Lưu ý: API này không trả về JSON, mà trả về stream byte của file (.csv, .xlsx) 
+    Lưu ý: API này nhận thông tin qua POST body và trả về stream byte của file (.csv, .xlsx) 
     với header 'Content-Disposition: attachment; filename=report.csv'.
     """
     pass
+
 ```
 
 ### 2.4. Admin Management Router (`/api/v1/admin`)
