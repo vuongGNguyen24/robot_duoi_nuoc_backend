@@ -68,12 +68,40 @@ Stores application user accounts.
   column          type        description
   --------------- ----------- -----------------------------------
   id              uuid        unique identifier for user
-  email           varchar     user login email
+  username        varchar     user login username
   password_hash   varchar     hashed password
-  role            varchar     user role (admin/operator/viewer)
+  role            varchar     user role (admin/moderator/viewer)
+  phone_number    varchar     user phone number
   created_at      timestamp   account creation time
+  created_by      uuid        user who created this account
+  is_locked       bool        whether the account is locked
+  locked_at       timestamp   time when the account was locked
+  locked_by       uuid        user who locked the account
+  notes           text        optional notes about the account (reason for deactivation, ...)
 
-Each user may control multiple devices.
+Each user may control multiple devices via `device_management_logs`.
+
+------------------------------------------------------------------------
+
+## device_management_logs
+
+Intermediary table linking users to devices (Many-to-Many).
+When a new management permission is created between a user and a device, a new record is added here.
+
+  column          type        description
+  --------------- ----------- -----------------------------------
+  id              uuid        unique log identifier
+  user_id         uuid        user assigned to the device
+  device_id       uuid        device managed by the user
+  create_at       timestamp   time the assignment was created
+  assigned_by     uuid        user who assigned the permission
+  removed_at      timestamp   time the assignment was removed
+  removed_by      uuid        user who removed the permission
+  notes           text        optional notes about the assignment
+
+Relationship:
+
+users ↔ devices (M:N)
 
 ------------------------------------------------------------------------
 
@@ -84,19 +112,41 @@ Represents robotic devices registered in the system.
   column             type        description
   ------------------ ----------- -------------------------------
   id                 uuid        unique device identifier
-  user_id            uuid        owner of the device
   name               varchar     human readable device name
-  device_type        varchar     device category
+  device_type        varchar     device type (robot/telemetry_base_station)
   firmware_version   varchar     firmware version installed
   location           varchar     textual installation location
   installed_at       timestamp   time device was deployed
   created_at         timestamp   record creation time
+  is_locked       bool        whether the device is locked
 
 Relationship:
 
-users → devices (1:N)
+devices ↔ users (M:N) via device_management_logs
 
-A user may own multiple robot devices.
+A device can be managed by multiple users, and a user can manage multiple devices.
+
+------------------------------------------------------------------------
+
+## mods_devices
+
+Association table for managing device access by moderators and admins.
+One moderator or admin can be assigned multiple devices, and one device can be managed by multiple moderators or admins.
+
+  column          type        description
+  --------------- ----------- -----------------------------------
+  id              uuid        unique log identifier
+  mod_id          uuid        moderator/admin assigned to the device
+  device_id       uuid        device managed by the moderator/admin
+  granted_at      timestamp   time the assignment was created
+  granted_by      uuid        user who granted the permission
+  revoked_at      timestamp   time the assignment was revoked
+  revoked_by      uuid        user who revoked the permission
+  notes           text        optional notes about the assignment
+
+Relationship:
+
+users ↔ devices (M:N) via mods_devices
 
 ------------------------------------------------------------------------
 
@@ -107,9 +157,10 @@ Represents physical sensors attached to a robot.
   column        type      description
   ------------- --------- ------------------------------------
   id            uuid      unique sensor identifier
+  name          varchar   sensor name
   device_id     uuid      robot device containing the sensor
-  unit          varchar   measurement unit
-  description   varchar   optional description
+  sensor_type   varchar   sensor type (temperature/ph/turbidity/dissolved_oxygen/water_level/multi_parameter/camera)
+  description   text      optional description
 
 Examples of sensors:
 
@@ -156,19 +207,21 @@ This table enables:
 
 ## telemetry
 
-Stores time-series measurements from sensors.
+Stores time-series measurements from sensors (including unit and id because of a sensor can measure multiple water quality parameters at the same time).
 
   column           type        description
   ---------------- ----------- -----------------------------------
+  id              uuid         unique identifier for the measurement
   sensor_id        uuid        sensor generating the measurement
   time             timestamp   time measurement was taken
   value            float       numeric measurement value
+  unit          varchar   measurement unit
   quality_flag     int         optional data quality indicator
   ingestion_time   timestamp   time data entered database
 
 Primary key:
 
-(sensor_id, time)
+(id)
 
 Relationship:
 
@@ -231,19 +284,23 @@ Example result JSON:
 
 Core relational structure:
 
-users └── devices ├── sensors │ └── telemetry │ ├── device_positions │
-└── image_capture └── image_analysis
+users ↔ device_management_logs ↔ devices
+                                    ├── sensors
+                                    │   └── telemetry
+                                    ├── device_positions
+                                    └── image_capture
+                                        └── image_analysis
 
 Summary:
 
-  relationship                     type
-  -------------------------------- ------
-  users → devices                  1:N
-  devices → sensors                1:N
-  sensors → telemetry              1:N
-  devices → device_positions       1:N
-  devices → image_capture          1:N
-  image_capture → image_analysis   1:N
+  relationship                                     type
+  ------------------------------------------------ ------
+  users ↔ devices (via device_management_logs)     M:N
+  devices → sensors                                1:N
+  sensors → telemetry                              1:N
+  devices → device_positions                       1:N
+  devices → image_capture                          1:N
+  image_capture → image_analysis                   1:N
 
 ------------------------------------------------------------------------
 

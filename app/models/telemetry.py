@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, DateTime, Float, Integer, ForeignKey
+from sqlalchemy import Column, String, DateTime, Float, Integer, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from app.core.database import Base
@@ -9,22 +9,24 @@ class Sensor(Base):
     __tablename__ = "sensors"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
-    unit = Column(String, nullable=True)
-    description = Column(String, nullable=True)
+    sensor_type = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
 
 class DevicePosition(Base):
     __tablename__ = "device_positions"
 
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), primary_key=True)
-    time = Column(DateTime, primary_key=True, index=True)
+    time = Column(DateTime, primary_key=True, index=True, default=datetime.now())
     location = Column(Geography(geometry_type='POINT', srid=4326), nullable=True)
 
 class Telemetry(Base):
     __tablename__ = "telemetry"
 
-    sensor_id = Column(UUID(as_uuid=True), ForeignKey("sensors.id"), primary_key=True)
-    time = Column(DateTime, primary_key=True, index=True)
-    value = Column(Float, nullable=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    sensor_id = Column(UUID(as_uuid=True), ForeignKey("sensors.id"), nullable=False)
+    time = Column(DateTime, index=True, default=datetime.now(), nullable=False)
+    unit = Column(String, nullable=False)
+    value = Column(Float, nullable=False)
     quality_flag = Column(Integer, nullable=True)
-    ingestion_time = Column(DateTime, default=datetime.utcnow)

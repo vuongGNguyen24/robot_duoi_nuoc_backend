@@ -12,4 +12,4 @@ class ActuatorCommand(Base):
     command = Column(String, nullable=False)
     initiated_by = Column(String, nullable=True)
     status = Column(String, default="queued") # 'queued', 'sent', 'ack', 'failed'
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now())
