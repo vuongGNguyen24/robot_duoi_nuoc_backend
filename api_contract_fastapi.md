@@ -64,6 +64,26 @@ class ActuatorCommandRequest(BaseModel):
     command: str = Field(..., description="Lệnh điều khiển: 'lift_up' | 'lower_down' | 'start_cleaning' | 'stop_cleaning'")
     initiated_by: Optional[str] = Field(None, description="'manual' (admin ra lệnh tay) hoặc 'auto' (hệ thống tự kích hoạt)")
 
+class UserDeviceAssignment(BaseModel):
+    user_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+
+class UserDeviceRemoval(BaseModel):
+    user_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+
+class ModDeviceAssignment(BaseModel):
+    mod_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+
+class ModDeviceRemoval(BaseModel):
+    mod_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+
 # --- Response Models ---
 class TokenResponse(BaseModel):
     access_token: str
@@ -282,8 +302,30 @@ admin_router = APIRouter(prefix="/api/v1/admin", tags=["Admin"], dependencies=[D
 # --- User Management ---
 @admin_router.get("/users", response_model=List[UserResponse])
 async def list_users():
-    """Lấy danh sách tài khoản."""
+    """Lấy danh sách tài khoản (trừ tài khoản admin)."""
     pass
+
+@admin_router.get("/users/role/{role}", response_model=List[UserResponse])
+async def list_users_by_role(role: Literal["moderator", "user"]):
+    """Lấy danh sách các tài khoản theo role (moderator hoặc user)."""
+    pass
+
+@admin_router.get("/users/details/{user_id}", response_model=UserResponse)
+async def get_user_details(user_id: UUID4):
+    """Xem chi tiết một tài khoản (Admin only)."""
+    pass
+
+
+@admin_router.put("/users/details/{user_id}", status_code=status.HTTP_200_OK)
+async def update_user_details(user_id: UUID4, payload: UserUpdate):
+    """Cập nhật thông tin chi tiết một tài khoản (Admin only)."""
+    pass
+
+@admin_router.put("/users/lock/{user_id}", status_code=status.HTTP_200_OK)
+async def update_user_lock(user_id: UUID4, payload: UserUpdate):
+    """Khóa (Delete) một tài khoản (Admin only)."""
+    pass
+
 
 @admin_router.post("/users", response_model=UserResponse)
 async def create_user(payload: UserBase):
@@ -306,10 +348,25 @@ async def get_device(device_id: UUID4):
     """Lấy chi tiết một thiết bị kèm danh sách cảm biến."""
     pass
 
-# --- Settings ---
-@admin_router.put("/settings/thresholds", status_code=status.HTTP_200_OK)
-async def update_warning_thresholds(payload: ThresholdUpdateRequest):
-    """Sửa ngưỡng cảnh báo cho cảm biến (Admin only)."""
+# --- Device Allocation ---
+@admin_router.post("/users/devices", status_code=status.HTTP_201_CREATED)
+async def assign_device_to_user(payload: UserDeviceAssignment):
+    """Phân bổ thiết bị cho user (ghi vào bảng device_management_logs)."""
+    pass
+
+@admin_router.delete("/users/devices", status_code=status.HTTP_200_OK)
+async def remove_device_from_user(payload: UserDeviceRemoval):
+    """Gỡ bỏ thiết bị khỏi user (cập nhật bảng device_management_logs)."""
+    pass
+
+@admin_router.post("/moderators/devices", status_code=status.HTTP_201_CREATED)
+async def assign_device_to_moderator(payload: ModDeviceAssignment):
+    """Phân bổ thiết bị cho moderator (ghi vào bảng mods_devices)."""
+    pass
+
+@admin_router.delete("/moderators/devices", status_code=status.HTTP_200_OK)
+async def remove_device_from_moderator(payload: ModDeviceRemoval):
+    """Gỡ bỏ thiết bị khỏi moderator (cập nhật bảng mods_devices)."""
     pass
 ```
 

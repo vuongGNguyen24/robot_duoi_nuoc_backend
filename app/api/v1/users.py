@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from app.api.dependencies import get_current_user, get_db
+from app.api.v1.dependencies import get_current_user, get_db
 from app.schemas.user import UserResponse, UpdatePhoneRequest
 from app.schemas.device import ThresholdUpdateRequest
 users_router = APIRouter(prefix="/users", tags=["Users"])

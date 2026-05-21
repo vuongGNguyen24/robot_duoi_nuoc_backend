@@ -29,3 +29,24 @@ class ThresholdUpdateRequest(BaseModel):
     sensor_id: UUID4 
     min_threshold: Optional[float] = None
     max_threshold: Optional[float] = None
+
+class UserDeviceAssignment(BaseModel):
+    user_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+
+class UserDeviceRemoval(BaseModel):
+    user_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+
+class ModDeviceAssignment(BaseModel):
+    mod_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+
+class ModDeviceRemoval(BaseModel):
+    mod_id: UUID4
+    device_id: UUID4
+    notes: Optional[str] = None
+

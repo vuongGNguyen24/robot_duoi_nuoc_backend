@@ -5,7 +5,7 @@ CREATE TABLE "devices" (
   "location" varchar,
   "installed_at" timestamp,
   "created_at" timestamp NOT NULL DEFAULT 'now',
-  "is_locked" bool NOT NULL DEFAULT false
+  "is_activated" bool NOT NULL DEFAULT true
 );
 
 CREATE TABLE "sensors" (
@@ -43,6 +43,12 @@ CREATE TABLE "image_capture" (
   "height" smallint
 );
 
+CREATE TABLE "permissions" (
+  "id" uuid,
+  "name" varchar,
+  "description" text
+);
+
 CREATE TABLE "image_analysis" (
   "id" uuid PRIMARY KEY,
   "image_id" uuid NOT NULL,
@@ -59,9 +65,15 @@ CREATE TABLE "users" (
   "phone_number" varchar UNIQUE NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT 'now',
   "created_by" uuid,
-  "is_locked" bool NOT NULL DEFAULT false,
-  "locked_by" uuid,
+  "is_activated" bool NOT NULL DEFAULT true,
+  "deactivated_by" uuid,
   "notes" text
+);
+
+CREATE TABLE "roles" (
+  "id" uuid,
+  "user_id" uuid NOT NULL,
+  "permission_id" uuid NOT NULL
 );
 
 CREATE TABLE "mods_devices" (
@@ -101,9 +113,13 @@ ALTER TABLE "mods_devices" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("
 
 ALTER TABLE "mods_devices" ADD FOREIGN KEY ("granted_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
+ALTER TABLE "roles" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
 ALTER TABLE "device_management_logs" ADD FOREIGN KEY ("assigned_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "image_capture" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "roles" ADD FOREIGN KEY ("id") REFERENCES "permissions" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "sensors" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
@@ -121,9 +137,10 @@ ALTER TABLE "device_management_logs" ADD FOREIGN KEY ("user_id") REFERENCES "use
 
 ALTER TABLE "device_management_logs" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "users" ADD FOREIGN KEY ("locked_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "users" ADD FOREIGN KEY ("deactivated_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "users" ADD FOREIGN KEY ("created_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
 
 
 
