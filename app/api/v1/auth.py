@@ -2,10 +2,38 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from app.api.v1.dependencies import get_db, get_current_user
 from app.schemas import LoginRequest, TokenResponse, ChangePasswordRequest, SendOtpRequest, VerifyOtpRequest
-from app.models.user import User
+from app.models.user import User, Role, Permission
 from app.core.security import verify_password, create_access_token, pwd_context, get_password_hash
-
+from app.api.v1.dependencies import get_user_roles
+from fastapi.security import OAuth2PasswordRequestForm
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+# 1. Endpoint phụ này phục vụ RIÊNG cho Swagger điền Form data
+@auth_router.post("/swagger-login") # bao che giấu khỏi docs cho đỡ rối
+async def swagger_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # Lấy username và password từ Form data mà Swagger gửi lên
+    username = form_data.username
+    password = form_data.password
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user or not verify_password(password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user_id = user.id
+    roles = db.query(Permission.name).join(
+        Role, Role.permission_id == Permission.id
+    ).filter(
+        Role.user_id == user_id
+    ).all() 
+    role = roles[0][0]
+    #TODO: create token with all roles
+    access_token = create_access_token(subject=user.id, role=role)
+    return {"access_token": access_token, "token_type": "bearer", "role": role}
+        
 
 @auth_router.post("/login", response_model=TokenResponse)
 async def login(payload: LoginRequest, db: Session = Depends(get_db)):
@@ -16,8 +44,16 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(subject=user.id, role=user.role)
-    return {"access_token": access_token, "token_type": "bearer", "role": user.role}
+    user_id = user.id
+    roles = db.query(Permission.name).join(
+        Role, Role.permission_id == Permission.id
+    ).filter(
+        Role.user_id == user_id
+    ).all() 
+    role = roles[0][0]
+    #TODO: create token with all roles
+    access_token = create_access_token(subject=user.id, role=role)
+    return {"access_token": access_token, "token_type": "bearer", "role": role}
 
 
 @auth_router.put("/password", status_code=status.HTTP_204_NO_CONTENT)
