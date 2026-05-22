@@ -13,6 +13,7 @@ class Sensor(Base):
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
     sensor_type = Column(String, nullable=True)
     description = Column(Text, nullable=True)
+    locked_at = Column(DateTime, nullable=True)
 
 class DevicePosition(Base):
     __tablename__ = "device_positions"

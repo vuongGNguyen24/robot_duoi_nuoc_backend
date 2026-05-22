@@ -12,13 +12,23 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     # role = Column(String, default="user", nullable=False) # 'admin' or 'user'
     phone_number = Column(String, unique=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(), nullable=False)
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     is_locked = Column(Boolean, default=False, nullable=False)
     locked_at = Column(DateTime, nullable=True)
     locked_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     notes = Column(Text, nullable=True)
 
+
+class Permission(Base):
+    __tablename__ = "permissions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+
+    def __repr__(self):
+        return f"<Permission(name='{self.name}')>"
 
 class Role(Base):
     __tablename__ = "roles"

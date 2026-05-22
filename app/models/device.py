@@ -13,8 +13,13 @@ class Device(Base):
     firmware_version = Column(String, nullable=True)
     location = Column(String, nullable=True)
     installed_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.now(), nullable=False)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
     is_locked = Column(Boolean, default=False, nullable=False)
+    locked_at = Column(DateTime, nullable=True)
+    notes = Column(Text, nullable=True)
+    
+    def __repr__(self):
+        return f"<Device(id='{self.id}', name='{self.name}')>"
 
 class DeviceManagementLog(Base):
     __tablename__ = "device_management_logs"
@@ -22,12 +27,11 @@ class DeviceManagementLog(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
-    create_at = Column(DateTime, default=datetime.now(), nullable=False)
+    create_at = Column(DateTime, default=datetime.now, nullable=False)
     assigned_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     removed_at = Column(DateTime, nullable=True)
     removed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     notes = Column(Text, nullable=True)
-
 
 class ModsDevice(Base):
     __tablename__ = "mods_devices"
@@ -35,7 +39,7 @@ class ModsDevice(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     mod_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
-    granted_at = Column(DateTime, default=datetime.now(), nullable=False)
+    granted_at = Column(DateTime, default=datetime.now, nullable=False)
     granted_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     revoked_at = Column(DateTime, nullable=True)
     revoked_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
