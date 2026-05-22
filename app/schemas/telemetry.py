@@ -32,6 +32,7 @@ class CameraImageResponse(BaseModel):
     linked_telemetry_time: Optional[datetime] = Field(None, description="Thời điểm đo telemetry")
 
 class ExportRequest(BaseModel):
+    device_id: UUID4
     start_date: datetime
     end_date: datetime
     columns: List[str]
