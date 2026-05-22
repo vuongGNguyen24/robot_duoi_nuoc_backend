@@ -4,7 +4,7 @@ from typing import List
 from uuid import UUID
 from datetime import datetime
 
-from app.api import dependencies
+from app.api.v1 import dependencies
 from app.schemas.telemetry import EdgeTelemetryPayload, CameraImageResponse
 from app.schemas.common import StandardErrorFormat
 
