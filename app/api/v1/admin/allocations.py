@@ -18,12 +18,12 @@ async def assign_device_to_user(
     db: Session = Depends(get_db)
 ):
     # Verify user exists
-    user = db.query(User).filter(User.id == payload.user_id).first()
+    user = db.query(User).filter(User.id == payload.user_id).filter(User.is_locked == False).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     # Verify device exists
-    device = db.query(Device).filter(Device.id == payload.device_id).first()
+    device = db.query(Device).filter(Device.id == payload.device_id).filter(Device.is_locked == False).first()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
         
