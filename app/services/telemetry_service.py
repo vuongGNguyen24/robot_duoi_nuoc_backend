@@ -65,20 +65,17 @@ class TelemetryService:
         db.commit()
         return True
 
-    async def export_telemetry_data(self, db: Session, user_id: uuid.UUID, start_date: datetime, end_date: datetime, columns: List[str], format: str):
+    async def export_telemetry_data(self, db: Session, device_id: uuid.UUID, start_date: datetime, end_date: datetime, columns: List[str], format: str):
         """
         Xuất dữ liệu telemetry ra file CSV hoặc XLSX.
         """
         from typing import List
         import pandas as pd
         
-        # 1. Lấy danh sách thiết bị của người dùng
-        devices = db.query(Device).filter(Device.user_id == user_id).all()
-        if not devices:
-            return None, None, None
+        device = db.query(Device).filter(Device.id == device_id).first()
             
-        device_ids = [d.id for d in devices]
-        device_map = {d.id: d.name for d in devices}
+        device_ids = [device.id]
+        device_map = {device.id: device.name}
         
         # 2. Truy vấn dữ liệu Telemetry kèm thông tin Sensor
         raw_telemetry = (

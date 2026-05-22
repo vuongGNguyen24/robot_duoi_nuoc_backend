@@ -10,11 +10,10 @@ class DeviceBase(BaseModel):
     location: Optional[str] = None
 
 class DeviceCreate(DeviceBase):
-    user_id: Optional[UUID4] = None
+    installed_at: Optional[datetime]
 
 class DeviceResponse(DeviceBase):
     id: UUID4
-    user_id: Optional[UUID4]
     installed_at: Optional[datetime]
     created_at: datetime
 

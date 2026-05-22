@@ -5,7 +5,7 @@ from datetime import datetime
 class UserBase(BaseModel):
     username: str
     role: str = Field(..., description="Role of the user: 'admin' or 'user'")
-    phone_number: Optional[str] = None
+    phone_number: str
 
 class UserCreate(UserBase):
     password: str
