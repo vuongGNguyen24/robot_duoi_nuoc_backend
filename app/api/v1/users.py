@@ -1,13 +1,21 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from app.api.v1.dependencies import get_current_user, get_db
+from app.api.v1.dependencies import get_current_user, get_db, get_user_roles
 from app.schemas.user import UserResponse, UpdatePhoneRequest
 from app.schemas.device import ThresholdUpdateRequest
 users_router = APIRouter(prefix="/users", tags=["Users"])
 
 @users_router.get("/me", response_model=UserResponse)
-async def get_current_user_profile(current_user=Depends(get_current_user)):
-    return current_user
+async def get_current_user_profile(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    roles = get_user_roles(current_user, db)
+    print(roles)
+    return UserResponse(
+        id=current_user.id,
+        username=current_user.username,
+        phone_number=current_user.phone_number,
+        created_at=current_user.created_at,
+        role=roles[0]
+    )
 
 # @users_router.get("/settings/thresholds", response_model=UserResponse)
 # async def get_user_setting(current_user=Depends(get_current_user)):
