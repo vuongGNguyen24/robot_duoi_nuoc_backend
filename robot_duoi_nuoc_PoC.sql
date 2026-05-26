@@ -13,6 +13,8 @@ CREATE TABLE "sensors" (
   "name" varchar NOT NULL,
   "device_id" uuid NOT NULL,
   "sensor_type" varchar,
+  "product_code" varchar,
+  "vendor" varchar,
   "description" text
 );
 
