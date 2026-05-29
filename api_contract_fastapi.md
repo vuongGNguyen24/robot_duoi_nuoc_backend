@@ -24,7 +24,7 @@ class DeviceBase(BaseModel):
 
 # --- Request Models ---
 class LoginRequest(BaseModel):
-    phone_number: str
+    username: str
     password: str
 
 class ChangePasswordRequest(BaseModel):
@@ -56,33 +56,12 @@ class EdgeTelemetryPayload(BaseModel):
     time: datetime
     location: Optional[str] = Field(None, description="Tọa độ GPS dạng WKT (Point)")
     sensors_data: List[Dict[str, Any]] = Field(..., description="Danh sách dữ liệu từ các sensor")
-    # Ví dụ: [{"sensor_id": "uuid", "value": 25.5, "quality_flag": 1}]
-    water_level_raw: Optional[float] = Field(None, description="Giá trị thô mức nước bồn chứa (%), gửi kèm mỗi lần đo telemetry")
+    quality_flag: Optional[int] = Field(None, description="Giá trị thô mức nước bồn chứa (%), gửi kèm mỗi lần đo telemetry")
 
 class ActuatorCommandRequest(BaseModel):
     device_id: UUID4
     command: str = Field(..., description="Lệnh điều khiển: 'lift_up' | 'lower_down' | 'start_cleaning' | 'stop_cleaning'")
     initiated_by: Optional[str] = Field(None, description="'manual' (admin ra lệnh tay) hoặc 'auto' (hệ thống tự kích hoạt)")
-
-class UserDeviceAssignment(BaseModel):
-    user_id: UUID4
-    device_id: UUID4
-    notes: Optional[str] = None
-
-class UserDeviceRemoval(BaseModel):
-    user_id: UUID4
-    device_id: UUID4
-    notes: Optional[str] = None
-
-class ModDeviceAssignment(BaseModel):
-    mod_id: UUID4
-    device_id: UUID4
-    notes: Optional[str] = None
-
-class ModDeviceRemoval(BaseModel):
-    mod_id: UUID4
-    device_id: UUID4
-    notes: Optional[str] = None
 
 # --- Response Models ---
 class TokenResponse(BaseModel):
@@ -147,18 +126,10 @@ class ActuatorCommandResponse(BaseModel):
     command: str
     status: str = Field(..., description="Trạng thái lệnh: 'queued' | 'sent' | 'ack' | 'failed'")
     created_at: datetime
-
-class SensorResponse(BaseModel):
-    id: UUID4
-    device_id: UUID4
-    unit: str
-    description: Optional[str]
-
-class DeviceDetailResponse(DeviceResponse):
-    sensors: List[SensorResponse]
 ```
 
 ---
+
 
 ## 2. API Endpoints (FastAPI Routers)
 
@@ -462,14 +433,6 @@ async def get_actuator_status(device_id: UUID4):
     """
     pass
 
-@actuator_router.get("/water-level/{device_id}", response_model=WaterLevelStatusResponse)
-async def get_water_level_status(device_id: UUID4):
-    """
-    Lấy trạng thái mức nước bồn chứa nước ngọt của thiết bị.
-    Cảnh báo khi level_pct < low_threshold_pct (mặc định 20%).
-    """
-    pass
-```
 
 ---
 

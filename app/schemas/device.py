@@ -1,7 +1,7 @@
 from pydantic import BaseModel, UUID4
 from typing import Optional, List
 from datetime import datetime
-from app.schemas.sensor import SensorResponse
+from app.schemas.sensor import SensorResponse, MultiSensorResponse
 
 class DeviceBase(BaseModel):
     name: str
@@ -22,7 +22,7 @@ class DeviceResponse(DeviceBase):
         from_attributes = True
 
 class DeviceDetailResponse(DeviceResponse):
-    sensors: List[SensorResponse] = []
+    multi_sensors: List[MultiSensorResponse]
 
 class ThresholdUpdateRequest(BaseModel):
     sensor_id: UUID4 

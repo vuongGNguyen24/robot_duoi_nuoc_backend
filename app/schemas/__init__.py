@@ -11,7 +11,6 @@ from .telemetry import (
     CameraImageResponse
 )
 from .actuator import (
-    ActuatorCommandRequest, ActuatorCommandResponse, ActuatorStatusResponse, 
-    WaterLevelStatusResponse
+    ActuatorCommandRequest, ActuatorCommandResponse, ActuatorStatusResponse
 )
 from .common import TokenResponse, StandardErrorFormat

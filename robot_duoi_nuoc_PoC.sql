@@ -1,21 +1,33 @@
 CREATE TABLE "devices" (
   "id" uuid PRIMARY KEY,
-  "name" varchar NOT NULL,
+  "name" varchar UNIQUE NOT NULL,
   "firmware_version" varchar,
   "location" varchar,
   "installed_at" timestamp,
   "created_at" timestamp NOT NULL DEFAULT 'now',
-  "is_activated" bool NOT NULL DEFAULT true
+  "is_locked" bool NOT NULL DEFAULT false,
+  "locked_at" datetime,
+  "notes" text
+);
+
+CREATE TABLE "multi_sensors" (
+  "id" uuid PRIMARY KEY,
+  "device_id" uuid NOT NULL,
+  "name" varchar NOT NULL,
+  "locked_at" datetime,
+  "product_code" varchar,
+  "vendor" varchar,
+  "description" text
 );
 
 CREATE TABLE "sensors" (
   "id" uuid PRIMARY KEY,
-  "name" varchar NOT NULL,
-  "device_id" uuid NOT NULL,
+  "multi_sensor_id" uuid NOT NULL,
+  "name" varchar,
   "sensor_type" varchar,
-  "product_code" varchar,
-  "vendor" varchar,
-  "description" text
+  "description" text,
+  "min_threshold" float,
+  "max_threshold" float
 );
 
 CREATE TABLE "device_positions" (
@@ -67,8 +79,9 @@ CREATE TABLE "users" (
   "phone_number" varchar UNIQUE NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT 'now',
   "created_by" uuid,
-  "is_activated" bool NOT NULL DEFAULT true,
-  "deactivated_by" uuid,
+  "is_locked" bool NOT NULL DEFAULT false,
+  "locked_by" uuid,
+  "locked_at" datetime,
   "notes" text
 );
 
@@ -100,14 +113,31 @@ CREATE TABLE "device_management_logs" (
   "notes" text
 );
 
+CREATE TABLE "actuators" (
+  "id" uuid PRIMARY KEY,
+  "device_id" uuid NOT NULL,
+  "name" varchar NOT NULL,
+  "status" json
+);
+
+CREATE TABLE "actuator_commands" (
+  "id" uuid PRIMARY KEY,
+  "actuator_id" uuid NOT NULL,
+  "comment" varchar,
+  "send_time" datetime NOT NULL DEFAULT 'now',
+  "response_time" datetime
+);
+
+CREATE TABLE "alerts" (
+  "id" uuid PRIMARY KEY,
+  "telemetry_id" uuid NOT NULL,
+  "state" varchar NOT NULL DEFAULT 'to do',
+  "end_time" datetime
+);
+
 CREATE INDEX ON "device_positions" ("time");
 
 CREATE INDEX ON "telemetry" ("time");
-
-CREATE INDEX idx_users_devices_current 
-ON "users_devices" ("device_id") 
-WHERE "removed_at" IS NULL;
-
 
 ALTER TABLE "mods_devices" ADD FOREIGN KEY ("mod_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
@@ -123,7 +153,9 @@ ALTER TABLE "image_capture" ADD FOREIGN KEY ("device_id") REFERENCES "devices" (
 
 ALTER TABLE "roles" ADD FOREIGN KEY ("id") REFERENCES "permissions" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "sensors" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "multi_sensors" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "sensors" ADD FOREIGN KEY ("multi_sensor_id") REFERENCES "multi_sensors" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "device_management_logs" ADD FOREIGN KEY ("removed_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
@@ -139,13 +171,12 @@ ALTER TABLE "device_management_logs" ADD FOREIGN KEY ("user_id") REFERENCES "use
 
 ALTER TABLE "device_management_logs" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
-ALTER TABLE "users" ADD FOREIGN KEY ("deactivated_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "users" ADD FOREIGN KEY ("locked_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "users" ADD FOREIGN KEY ("created_by") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
+ALTER TABLE "telemetry" ADD FOREIGN KEY ("id") REFERENCES "alerts" ("telemetry_id") DEFERRABLE INITIALLY IMMEDIATE;
 
+ALTER TABLE "actuators" ADD FOREIGN KEY ("device_id") REFERENCES "devices" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
-
-
-
-
+ALTER TABLE "actuator_commands" ADD FOREIGN KEY ("actuator_id") REFERENCES "actuators" ("id") DEFERRABLE INITIALLY IMMEDIATE;

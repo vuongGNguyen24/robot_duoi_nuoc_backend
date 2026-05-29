@@ -5,15 +5,28 @@ from datetime import datetime
 from app.core.database import Base
 from geoalchemy2 import Geography
 
+
+class MultiSensor(Base):
+    __tablename__ = "multi_sensors"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
+    name = Column(String, nullable=False)
+    locked_at = Column(DateTime, nullable=True)
+    product_code = Column(String, nullable=True)
+    vendor = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    locked_at = Column(DateTime, nullable=True)
+
+
 class Sensor(Base):
     __tablename__ = "sensors"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
-    device_id = Column(UUID(as_uuid=True), ForeignKey("devices.id"), nullable=False)
+    multi_sensor_id = Column(UUID(as_uuid=True), ForeignKey("multi_sensors.id"), nullable=False)
     sensor_type = Column(String, nullable=True)
     description = Column(Text, nullable=True)
-    locked_at = Column(DateTime, nullable=True)
 
 class DevicePosition(Base):
     __tablename__ = "device_positions"

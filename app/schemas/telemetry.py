@@ -3,12 +3,33 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 class EdgeTelemetryPayload(BaseModel):
-    device_id: UUID4
+    """
+    Ví dụ:
+    {
+        "sensor_name": "Cảm biến nhiệt độ nước",
+        "sensor_value": 26.5,
+        "unit": "°C",
+        "quality_flag": 1
+    }
+    """
+    sensor_name: str
     time: datetime
-    location: Optional[str] = Field(None, description="Tọa độ GPS dạng WKT (Point)")
-    sensors_data: List[Dict[str, Any]] = Field(..., description="Danh sách dữ liệu từ các sensor")
-    water_level_raw: Optional[float] = Field(None, description="Giá trị thô mức nước bồn chứa (%)")
+    sensor_value: float = Field(..., description="Dữ liệu từ các sensor")
+    unit: str = Field(..., description="Đơn vị của dữ liệu")
+    quality_flag: Optional[int] = Field(..., description="Chất lượng đo từ các sensor")
 
+
+
+class EdgePositionPayload(BaseModel):
+    """
+    Ví dụ:
+    {
+        "device_name": "ROV_01",
+        "location": "POINT(105.8542 21.0285)"
+    }
+    """
+    device_id: UUID4
+    location: str = Field(..., description="Tọa độ GPS dạng WKT (Point)")
 class TelemetryRecordResponse(BaseModel):
     time: datetime
     device_id: UUID4

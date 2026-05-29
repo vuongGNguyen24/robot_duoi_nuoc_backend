@@ -4,6 +4,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from app.core.database import Base
 
+
+
+
+
 class Device(Base):
     __tablename__ = "devices"
 
@@ -17,7 +21,8 @@ class Device(Base):
     is_locked = Column(Boolean, default=False, nullable=False)
     locked_at = Column(DateTime, nullable=True)
     notes = Column(Text, nullable=True)
-    
+    device_api_key_hash = Column(String, unique=True, nullable=False)
+    salt = Column(String, nullable=False)
     def __repr__(self):
         return f"<Device(id='{self.id}', name='{self.name}')>"
 
